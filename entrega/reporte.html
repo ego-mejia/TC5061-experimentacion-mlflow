@@ -1,0 +1,26 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><style>
+@page { size: Letter; margin: 2.5cm; }
+body { font-family: "Times New Roman", Times, serif; font-size: 11pt; line-height: 1.5; text-align: justify; margin: 0; }
+h1 { font-size: 13pt; text-align: center; margin: 0 0 2pt; }
+p { margin: 0 0 4pt; } .c { text-align:center; margin:0; }
+code { font-family: Menlo, monospace; font-size: 9pt; }
+h2 { font-size: 11pt; margin: 6pt 0 0; }
+.annex { page-break-before: always; } img { width: 100%; border: 1px solid #999; }
+.cap { font-size: 11pt; text-align: center; margin: 2pt 0 8pt; }
+</style></head><body>
+<h1>Experimentación con MLflow: Regresión Logística sobre UCI Adult</h1>
+<p class="c">Fernando Mejía Laguna · TC5061.10 – MLOps · 11 de octubre de 2026</p>
+<p class="c">Repositorio: <a href="https://github.com/ego-mejia/TC5061-experimentacion-mlflow">https://github.com/ego-mejia/TC5061-experimentacion-mlflow</a></p>
+<h2>Ejecución</h2>
+<p>Comando exacto de una corrida: <code>python train.py --C 0.1 --penalty l1 --run-name 05-l1-C0.1</code>. Las ocho configuraciones se lanzan con <code>./run_experiments.sh</code>, todas bajo el experimento <i>TC5061-adult-income-experimentacion</i>. El script expone <code>--C</code>, <code>--penalty</code>, <code>--max-iter</code>, <code>--class-weight</code>, <code>--ohe-min-frequency</code>, <code>--test-size</code> y <code>--seed</code>, con valores por defecto. La semilla controla <code>random</code>, <code>numpy</code>, la partición estratificada y el modelo; una corrida adicional con los mismos argumentos que la configuración base (09-repro-check) produjo métricas idénticas.</p>
+<h2>Análisis de resultados</h2>
+<p>Se compararon ocho configuraciones (Anexo, Figura 1). Con ROC-AUC y F1 en prueba, la mejor fue <b>08-seed7</b> (F1 = 0.676, AUC = 0.899), pero cambia la semilla y, con ella, la partición train/test, por lo que su ventaja no es atribuible a un hiperparámetro. Entre las corridas con la misma partición (semilla 42), la mejor fue <b>03-C0.1</b> (F1 = 0.672, AUC = 0.894), seguida de 05-l1-C0.1 (F1 = 0.672).</p>
+<p>El hiperparámetro más influyente fue <b>class_weight</b>. Quitar el balanceo (06-sin-balanceo) subió la exactitud de 0.798 a 0.834 y la precisión de 0.561 a 0.697, pero hundió el recall de 0.835 a 0.579 y el F1 de 0.671 a 0.632; el modelo prioriza la clase mayoritaria (≤50K). El AUC no cambió (0.893), porque el balanceo mueve el umbral efectivo y no la capacidad de ordenar los casos. Si se busca detectar ingresos altos, conviene balancear; si importa minimizar falsos positivos, no. En contraste, <b>C</b> (0.01 a 10), la penalización l1 frente a l2 y <b>ohe_min_frequency</b> (20 frente a 200) movieron el F1 en menos de 0.003 y el AUC en menos de 0.001.</p>
+<p><b>Limitaciones.</b> (1) Cada configuración se corrió una sola vez con una única partición; diferencias de 0.002 en F1 están dentro del ruido de muestreo, como muestra el salto de 0.676 al cambiar solo la semilla. (2) Se varió un hiperparámetro a la vez, sin explorar interacciones. (3) Se evalúa con un solo conjunto de prueba y con el umbral 0.5; no hay validación cruzada ni ajuste del umbral. (4) Al ser un modelo lineal, el espacio de hiperparámetros es estrecho; un modelo de árboles probablemente mostraría mayor sensibilidad.</p>
+<div class="annex">
+<h2>Anexo – Capturas de MLflow</h2>
+<img src="../evidencia/mlflow_tabla_comparativa.jpg">
+<p class="cap">Figura 1. Vista de comparación de las 8 corridas (parámetros y métricas).</p>
+<img src="../evidencia/mlflow_detalle_corrida_artefactos.jpg">
+<p class="cap">Figura 2. Detalle de la corrida 01-default con sus artefactos (classification_report.txt, evaluation.png, metrics.json).</p>
+</div></body></html>

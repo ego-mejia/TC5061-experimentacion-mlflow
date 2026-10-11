@@ -1,0 +1,5 @@
+mlflow.db
+mlruns/
+__pycache__/
+.venv/
+.DS_Store
